@@ -1,5 +1,6 @@
 package com.memo.backend.memo.entity;
 
+import com.memo.backend.user.entity.User;
 import java.time.LocalDateTime;
 
 import jakarta.persistence.Column;
@@ -7,6 +8,9 @@ import jakarta.persistence.Entity;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
+import jakarta.persistence.FetchType;
+import jakarta.persistence.JoinColumn;
+import jakarta.persistence.ManyToOne;
 import jakarta.persistence.PrePersist;
 import jakarta.persistence.PreUpdate;
 import jakarta.persistence.Table;
@@ -19,8 +23,9 @@ public class Memo {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
-    @Column(nullable = false)
-    private Long userId;
+    @ManyToOne(fetch = FetchType.LAZY, optional = false)
+    @JoinColumn(name = "user_id", nullable = false)
+    private User user;
 
     @Column(nullable = false)
     private String title;
@@ -37,8 +42,8 @@ public class Memo {
     protected Memo() {
     }
 
-    public Memo(Long userId, String title, String content) {
-        this.userId = userId;
+    public Memo(User user, String title, String content) {
+        this.user = user;
         this.title = title;
         this.content = content;
     }
@@ -59,8 +64,8 @@ public class Memo {
         return id;
     }
 
-    public Long getUserId() {
-        return userId;
+    public User getUser() {
+        return user;
     }
 
     public String getTitle() {
@@ -77,5 +82,10 @@ public class Memo {
 
     public LocalDateTime getUpdatedAt() {
         return updatedAt;
+    }
+
+    public void update(String title, String content) {
+        this.title = title;
+        this.content = content;
     }
 }
