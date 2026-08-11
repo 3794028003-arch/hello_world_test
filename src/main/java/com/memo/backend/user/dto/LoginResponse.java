@@ -1,4 +1,4 @@
 package com.memo.backend.user.dto;
 
-public record LoginResponse(String token) {
+public record LoginResponse(String accessToken, String refreshToken) {
 }

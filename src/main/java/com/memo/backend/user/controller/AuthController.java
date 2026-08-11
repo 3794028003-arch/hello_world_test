@@ -1,8 +1,10 @@
 package com.memo.backend.user.controller;
 
+import com.memo.backend.common.ApiResponse;
 import com.memo.backend.user.dto.LoginRequest;
 import com.memo.backend.user.dto.LoginResponse;
 import com.memo.backend.user.dto.RegisterRequest;
+import com.memo.backend.user.dto.RefreshRequest;
 import com.memo.backend.user.dto.UserResponse;
 import com.memo.backend.user.service.UserService;
 import jakarta.validation.Valid;
@@ -24,12 +26,23 @@ public class AuthController {
 
     @PostMapping("/register")
     @ResponseStatus(HttpStatus.CREATED)
-    public UserResponse register(@Valid @RequestBody RegisterRequest request) {
-        return userService.register(request);
+    public ApiResponse<UserResponse> register(@Valid @RequestBody RegisterRequest request) {
+        return ApiResponse.of(userService.register(request));
     }
 
     @PostMapping("/login")
-    public LoginResponse login(@Valid @RequestBody LoginRequest request) {
-        return userService.login(request);
+    public ApiResponse<LoginResponse> login(@Valid @RequestBody LoginRequest request) {
+        return ApiResponse.of(userService.login(request));
+    }
+
+    @PostMapping("/refresh")
+    public ApiResponse<LoginResponse> refresh(@Valid @RequestBody RefreshRequest request) {
+        return ApiResponse.of(userService.refresh(request.refreshToken()));
+    }
+
+    @PostMapping("/logout")
+    public ApiResponse<Void> logout(@Valid @RequestBody RefreshRequest request) {
+        userService.logout(request.refreshToken());
+        return ApiResponse.of(null);
     }
 }

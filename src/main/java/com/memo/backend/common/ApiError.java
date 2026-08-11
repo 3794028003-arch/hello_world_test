@@ -2,5 +2,5 @@ package com.memo.backend.common;
 
 import java.time.Instant;
 
-public record ApiError(Instant timestamp, int status, String error, String message) {
+public record ApiError(String code, String message, Instant timestamp) {
 }

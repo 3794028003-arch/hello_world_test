@@ -1,5 +1,6 @@
 package com.memo.backend.memo.controller;
 
+import com.memo.backend.common.ApiResponse;
 import com.memo.backend.memo.dto.MemoRequest;
 import com.memo.backend.memo.dto.MemoResponse;
 import com.memo.backend.memo.service.MemoService;
@@ -11,6 +12,8 @@ import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.PutMapping;
+import org.springframework.web.bind.annotation.PatchMapping;
+import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.ResponseStatus;
@@ -29,24 +32,37 @@ public class MemoController {
 
     @PostMapping
     @ResponseStatus(HttpStatus.CREATED)
-    public MemoResponse create(@AuthenticationPrincipal String username, @Valid @RequestBody MemoRequest request) {
-        return memoService.create(username, request);
+    public ApiResponse<MemoResponse> create(@AuthenticationPrincipal String username, @Valid @RequestBody MemoRequest request) {
+        return ApiResponse.of(memoService.create(username, request));
     }
 
     @GetMapping
-    public List<MemoResponse> findAll(@AuthenticationPrincipal String username) {
-        return memoService.findAll(username);
+    public ApiResponse<List<MemoResponse>> findAll(@AuthenticationPrincipal String username,
+                                                    @RequestParam(required = false) String keyword,
+                                                    @RequestParam(required = false) String category,
+                                                    @RequestParam(required = false) Boolean favorite) {
+        return ApiResponse.of(memoService.findAll(username, keyword, category, favorite));
     }
 
     @PutMapping("/{id}")
-    public MemoResponse update(@PathVariable Long id, @AuthenticationPrincipal String username,
+    public ApiResponse<MemoResponse> update(@PathVariable Long id, @AuthenticationPrincipal String username,
                                @Valid @RequestBody MemoRequest request) {
-        return memoService.update(id, username, request);
+        return ApiResponse.of(memoService.update(id, username, request));
     }
 
     @DeleteMapping("/{id}")
-    @ResponseStatus(HttpStatus.NO_CONTENT)
-    public void delete(@PathVariable Long id, @AuthenticationPrincipal String username) {
+    public ApiResponse<Void> delete(@PathVariable Long id, @AuthenticationPrincipal String username) {
         memoService.delete(id, username);
+        return ApiResponse.of(null);
+    }
+
+    @PatchMapping("/{id}/favorite")
+    public ApiResponse<MemoResponse> toggleFavorite(@PathVariable Long id, @AuthenticationPrincipal String username) {
+        return ApiResponse.of(memoService.toggleFavorite(id, username));
+    }
+
+    @PatchMapping("/{id}/pin")
+    public ApiResponse<MemoResponse> togglePinned(@PathVariable Long id, @AuthenticationPrincipal String username) {
+        return ApiResponse.of(memoService.togglePinned(id, username));
     }
 }

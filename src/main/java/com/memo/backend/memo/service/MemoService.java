@@ -24,21 +24,45 @@ public class MemoService {
 
     public MemoResponse create(String username, MemoRequest request) {
         User user = userService.getByUsername(username);
-        return MemoResponse.from(memoRepository.save(new Memo(user, request.title(), request.content())));
+        Memo memo = new Memo(user, request.title(), request.content());
+        memo.update(request.title(), request.content(), request.category());
+        return MemoResponse.from(memoRepository.save(memo));
     }
 
-    public List<MemoResponse> findAll(String username) {
-        return memoRepository.findAllByUserUsernameOrderByUpdatedAtDesc(username).stream().map(MemoResponse::from).toList();
+    public List<MemoResponse> findAll(String username, String keyword, String category, Boolean favorite) {
+        List<Memo> memos;
+        if (keyword != null && !keyword.isBlank()) {
+            memos = memoRepository.findAllByUserUsernameAndTitleContainingIgnoreCaseOrderByIsPinnedDescUpdatedAtDesc(username, keyword);
+        } else if (category != null && !category.isBlank()) {
+            memos = memoRepository.findAllByUserUsernameAndCategoryOrderByIsPinnedDescUpdatedAtDesc(username, category);
+        } else if (favorite != null) {
+            memos = memoRepository.findAllByUserUsernameAndIsFavoriteOrderByIsPinnedDescUpdatedAtDesc(username, favorite);
+        } else {
+            memos = memoRepository.findAllByUserUsernameOrderByIsPinnedDescUpdatedAtDesc(username);
+        }
+        return memos.stream().map(MemoResponse::from).toList();
     }
 
     public MemoResponse update(Long id, String username, MemoRequest request) {
         Memo memo = findOwned(id, username);
-        memo.update(request.title(), request.content());
+        memo.update(request.title(), request.content(), request.category());
         return MemoResponse.from(memoRepository.save(memo));
     }
 
     public void delete(Long id, String username) {
         memoRepository.delete(findOwned(id, username));
+    }
+
+    public MemoResponse toggleFavorite(Long id, String username) {
+        Memo memo = findOwned(id, username);
+        memo.toggleFavorite();
+        return MemoResponse.from(memoRepository.save(memo));
+    }
+
+    public MemoResponse togglePinned(Long id, String username) {
+        Memo memo = findOwned(id, username);
+        memo.togglePinned();
+        return MemoResponse.from(memoRepository.save(memo));
     }
 
     private Memo findOwned(Long id, String username) {

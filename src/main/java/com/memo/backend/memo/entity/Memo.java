@@ -14,9 +14,14 @@ import jakarta.persistence.ManyToOne;
 import jakarta.persistence.PrePersist;
 import jakarta.persistence.PreUpdate;
 import jakarta.persistence.Table;
+import jakarta.persistence.Index;
 
 @Entity
-@Table(name = "memos")
+@Table(name = "memos", indexes = {
+        @Index(name = "idx_memos_user_id", columnList = "user_id"),
+        @Index(name = "idx_memos_user_category", columnList = "user_id, category"),
+        @Index(name = "idx_memos_user_favorite", columnList = "user_id, is_favorite")
+})
 public class Memo {
 
     @Id
@@ -32,6 +37,15 @@ public class Memo {
 
     @Column(nullable = false, columnDefinition = "TEXT")
     private String content;
+
+    @Column(nullable = false)
+    private boolean isFavorite = false;
+
+    @Column(nullable = false)
+    private boolean isPinned = false;
+
+    @Column(length = 100)
+    private String category;
 
     @Column(nullable = false, updatable = false)
     private LocalDateTime createdAt;
@@ -76,6 +90,12 @@ public class Memo {
         return content;
     }
 
+    public boolean isFavorite() { return isFavorite; }
+
+    public boolean isPinned() { return isPinned; }
+
+    public String getCategory() { return category; }
+
     public LocalDateTime getCreatedAt() {
         return createdAt;
     }
@@ -84,8 +104,13 @@ public class Memo {
         return updatedAt;
     }
 
-    public void update(String title, String content) {
+    public void update(String title, String content, String category) {
         this.title = title;
         this.content = content;
+        this.category = category;
     }
+
+    public void toggleFavorite() { this.isFavorite = !this.isFavorite; }
+
+    public void togglePinned() { this.isPinned = !this.isPinned; }
 }
