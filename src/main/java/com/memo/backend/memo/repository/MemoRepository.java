@@ -18,6 +18,9 @@ public interface MemoRepository extends JpaRepository<Memo, Long> {
     List<Memo> findAllByUserUsernameAndIsFavoriteOrderByIsPinnedDescUpdatedAtDesc(String username, boolean favorite);
 
     @EntityGraph(attributePaths = "user")
+    List<Memo> findAllByUserUsernameAndIsArchivedOrderByIsPinnedDescUpdatedAtDesc(String username, boolean archived);
+
+    @EntityGraph(attributePaths = "user")
     List<Memo> findAllByUserUsernameOrderByIsPinnedDescUpdatedAtDesc(String username);
 
     Optional<Memo> findByIdAndUserUsername(Long id, String username);

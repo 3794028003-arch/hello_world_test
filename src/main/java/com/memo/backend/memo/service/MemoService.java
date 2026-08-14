@@ -10,6 +10,7 @@ import com.memo.backend.user.service.UserService;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
+import java.util.Locale;
 
 @Service
 public class MemoService {
@@ -29,18 +30,13 @@ public class MemoService {
         return MemoResponse.from(memoRepository.save(memo));
     }
 
-    public List<MemoResponse> findAll(String username, String keyword, String category, Boolean favorite) {
-        List<Memo> memos;
-        if (keyword != null && !keyword.isBlank()) {
-            memos = memoRepository.findAllByUserUsernameAndTitleContainingIgnoreCaseOrderByIsPinnedDescUpdatedAtDesc(username, keyword);
-        } else if (category != null && !category.isBlank()) {
-            memos = memoRepository.findAllByUserUsernameAndCategoryOrderByIsPinnedDescUpdatedAtDesc(username, category);
-        } else if (favorite != null) {
-            memos = memoRepository.findAllByUserUsernameAndIsFavoriteOrderByIsPinnedDescUpdatedAtDesc(username, favorite);
-        } else {
-            memos = memoRepository.findAllByUserUsernameOrderByIsPinnedDescUpdatedAtDesc(username);
-        }
-        return memos.stream().map(MemoResponse::from).toList();
+    public List<MemoResponse> findAll(String username, String keyword, String category, Boolean favorite, Boolean archived) {
+        boolean archivedValue = Boolean.TRUE.equals(archived);
+        return memoRepository.findAllByUserUsernameAndIsArchivedOrderByIsPinnedDescUpdatedAtDesc(username, archivedValue).stream()
+                .filter(memo -> keyword == null || keyword.isBlank() || memo.getTitle().toLowerCase(Locale.ROOT).contains(keyword.toLowerCase(Locale.ROOT)) || memo.getContent().toLowerCase(Locale.ROOT).contains(keyword.toLowerCase(Locale.ROOT)))
+                .filter(memo -> category == null || category.isBlank() || category.equals(memo.getCategory()))
+                .filter(memo -> favorite == null || memo.isFavorite() == favorite)
+                .map(MemoResponse::from).toList();
     }
 
     public MemoResponse update(Long id, String username, MemoRequest request) {
@@ -62,6 +58,12 @@ public class MemoService {
     public MemoResponse togglePinned(Long id, String username) {
         Memo memo = findOwned(id, username);
         memo.togglePinned();
+        return MemoResponse.from(memoRepository.save(memo));
+    }
+
+    public MemoResponse toggleArchived(Long id, String username) {
+        Memo memo = findOwned(id, username);
+        memo.toggleArchived();
         return MemoResponse.from(memoRepository.save(memo));
     }
 

@@ -40,8 +40,9 @@ public class MemoController {
     public ApiResponse<List<MemoResponse>> findAll(@AuthenticationPrincipal String username,
                                                     @RequestParam(required = false) String keyword,
                                                     @RequestParam(required = false) String category,
-                                                    @RequestParam(required = false) Boolean favorite) {
-        return ApiResponse.of(memoService.findAll(username, keyword, category, favorite));
+                                                    @RequestParam(required = false) Boolean favorite,
+                                                    @RequestParam(required = false) Boolean archived) {
+        return ApiResponse.of(memoService.findAll(username, keyword, category, favorite, archived));
     }
 
     @PutMapping("/{id}")
@@ -64,5 +65,10 @@ public class MemoController {
     @PatchMapping("/{id}/pin")
     public ApiResponse<MemoResponse> togglePinned(@PathVariable Long id, @AuthenticationPrincipal String username) {
         return ApiResponse.of(memoService.togglePinned(id, username));
+    }
+
+    @PatchMapping("/{id}/archive")
+    public ApiResponse<MemoResponse> toggleArchived(@PathVariable Long id, @AuthenticationPrincipal String username) {
+        return ApiResponse.of(memoService.toggleArchived(id, username));
     }
 }

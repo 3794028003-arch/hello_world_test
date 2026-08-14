@@ -80,6 +80,22 @@ class ApiIntegrationTests {
                 .andExpect(status().isNotFound());
     }
 
+    @Test
+    void archiveIsUserScopedAndCombinesWithFilters() throws Exception {
+        String ownerToken = accessTokenFor(username());
+        String otherToken = accessTokenFor(username());
+        long id = createMemo(ownerToken, "Archived search", "work");
+        mockMvc.perform(patch("/api/memos/{id}/archive", id).header("Authorization", bearer(ownerToken)))
+                .andExpect(status().isOk()).andExpect(jsonPath("$.data.isArchived").value(true));
+        mockMvc.perform(get("/api/memos").param("archived", "false").header("Authorization", bearer(ownerToken)))
+                .andExpect(status().isOk()).andExpect(jsonPath("$.data.length()").value(0));
+        mockMvc.perform(get("/api/memos").param("archived", "true").param("keyword", "search").param("category", "work").header("Authorization", bearer(ownerToken)))
+                .andExpect(status().isOk()).andExpect(jsonPath("$.data.length()").value(1));
+        mockMvc.perform(patch("/api/memos/{id}/archive", id).header("Authorization", bearer(otherToken))).andExpect(status().isNotFound());
+        mockMvc.perform(patch("/api/memos/{id}/archive", id).header("Authorization", bearer(ownerToken)))
+                .andExpect(status().isOk()).andExpect(jsonPath("$.data.isArchived").value(false));
+    }
+
     private void register(String username) throws Exception {
         mockMvc.perform(post("/api/auth/register").contentType(MediaType.APPLICATION_JSON).content(registerJson(username)))
                 .andExpect(status().isCreated());

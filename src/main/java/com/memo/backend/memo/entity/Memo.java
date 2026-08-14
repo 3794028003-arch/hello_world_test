@@ -20,7 +20,8 @@ import jakarta.persistence.Index;
 @Table(name = "memos", indexes = {
         @Index(name = "idx_memos_user_id", columnList = "user_id"),
         @Index(name = "idx_memos_user_category", columnList = "user_id, category"),
-        @Index(name = "idx_memos_user_favorite", columnList = "user_id, is_favorite")
+        @Index(name = "idx_memos_user_favorite", columnList = "user_id, is_favorite"),
+        @Index(name = "idx_memos_user_archived", columnList = "user_id, is_archived")
 })
 public class Memo {
 
@@ -43,6 +44,9 @@ public class Memo {
 
     @Column(nullable = false)
     private boolean isPinned = false;
+
+    @Column(nullable = false)
+    private boolean isArchived = false;
 
     @Column(length = 100)
     private String category;
@@ -94,6 +98,8 @@ public class Memo {
 
     public boolean isPinned() { return isPinned; }
 
+    public boolean isArchived() { return isArchived; }
+
     public String getCategory() { return category; }
 
     public LocalDateTime getCreatedAt() {
@@ -113,4 +119,6 @@ public class Memo {
     public void toggleFavorite() { this.isFavorite = !this.isFavorite; }
 
     public void togglePinned() { this.isPinned = !this.isPinned; }
+
+    public void toggleArchived() { this.isArchived = !this.isArchived; }
 }
